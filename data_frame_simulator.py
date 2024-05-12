@@ -21,7 +21,7 @@ class MyDataFrame:
         return [self.columns] + self.data[:n]
 
     def index(self, row_index):
-        if row_index < 0 or row_index >= len(self.data):
+        if not 0 <= row_index < len(self.data):
             raise IndexError("Index out of range")
         return self.data[row_index]
 
@@ -52,8 +52,7 @@ class MyDataFrame:
         if column in self.columns:
             col_index = self.columns.index(column)
             return [row[col_index] for row in self.data]
-        else:
-            raise AttributeError(f"'MyDataFrame' object has no attribute '{column}'")
+        raise AttributeError(f"'MyDataFrame' object has no attribute '{column}'")
 
     def __getitem__(self, columns):
         if isinstance(columns, str):
@@ -61,32 +60,30 @@ class MyDataFrame:
                 raise KeyError(f"Column '{columns}' not found")
             return [row[self.columns.index(columns)] for row in self.data]
         elif isinstance(columns, list):
-            for col in columns:
-                if col not in self.columns:
-                    raise KeyError(f"Column '{col}' not found")
+            if not all(col in self.columns for col in columns):
+                raise KeyError(f"One or more columns not found")
             selected_data = [
                 [row[self.columns.index(col)] for col in columns] for row in self.data
             ]
             return MyDataFrame(selected_data, columns)
-        else:
-            raise TypeError("Invalid column selection")
+        raise TypeError("Invalid column selection")
 
 
 # Example usage
-data = [["John", 30, "New York"], ["Alice", 25, "Los Angeles"], ["Bob", 35, "Chicago"]]
-columns = ["Name", "Age", "City"]
+data = [(1, 2, 3), (4, None, 10), (5, 1, 19)]
+columns = ["a", "b", "c"]
 
 my_df = MyDataFrame(data, columns)
 print(my_df)
-print(my_df.City)
+print(my_df.a)
 print(my_df.index(1))
 print(
     my_df[
         [
-            "Name",
-            "Age",
+            "a",
+            "c",
         ]
     ]
 )
-sorted_df = my_df.sort("Age", mode="ascending")
+sorted_df = my_df.sort("a", mode="ascending")
 print(sorted_df)
